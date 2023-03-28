@@ -1,0 +1,372 @@
+apiVersion: troubleshoot.sh/v1beta2
+kind: SupportBundle
+metadata:
+  name: example
+spec:
+  hostCollectors:
+    - cpu: {}
+    - memory: {}
+    - hostOS: {}
+    - diskUsage:
+        collectorName: root-disk
+        path: /
+    - http:
+        collectorName: get-replicated-app
+        get:
+          url: https://replicated.app
+    - systemPackages:
+        collectorName: system-packages-mysql
+        rhel:
+          - mysql-server
+        ubuntu:
+          - mysql-server
+    - systemPackages:
+        collectorName: system-packages-mssql
+        ubuntu:
+          - mssql-server
+        rhel:
+          - mssql-server
+    - systemPackages:
+        collectorName: system-packages-docker
+        ubuntu:
+          - docker
+        rhel:
+          - docker
+    - systemPackages:
+        collectorName: system-packages-rhel
+        rhel:
+          - container-tools
+    - tcpPortStatus:
+        collectorName: host-https-port
+        port: 443
+    - tcpPortStatus:
+        collectorName: host-http-port
+        port: 80
+    - tcpPortStatus:
+        collectorName: host-kubernetes-http-port
+        port: 8080
+    - tcpPortStatus:
+        collectorName: host-ssh-port
+        port: 22
+    - tcpPortStatus:
+        collectorName: kubernetes-api-tcp-port
+        port: 6443
+    - tcpPortStatus:
+        collectorName: etcd-tcp-port
+        port: 2379
+    - tcpPortStatus:
+        collectorName: etcd-2-tcp-port
+        port: 2380
+    - tcpPortStatus:
+        collectorName: kubernetes-kublet-tcp-port
+        port: 10250
+    - tcpPortStatus:
+        collectorName: kubernetes-weave-tcp-port
+        port: 6783
+    - udpPortStatus:
+        collectorName: kubernetes-weave-udp-port
+        port: 6783
+    - udpPortStatus:
+        collectorName: kubernetes-weave-2-udp-port
+        port: 6784
+  hostAnalyzers:
+    - cpu:
+        checkName: "Number of CPUs"
+        outcomes:
+          - fail:
+              when: "count < 7"
+              message: At least 8 CPU cores are required, and 4 CPU cores are recommended
+          - warn:
+              when: "count < 15"
+              message: At least 16 CPU cores are recommended
+          - pass:
+              when: "count > 15"
+              message: This server has at least 4 CPU cores
+    - memory:
+        checkName: "Amount of Memory"
+        outcomes:
+          - fail:
+              when: "< 30G"
+              message: At least 32G of memory is required, and 64G of memory is recommended
+          - warn:
+              when: "< 31G"
+              message: At least 32G of memory is required, and 64G of memory is recommended
+          - pass:
+              when: "> 63G"
+              message: The system has at least 64G of memory
+    - hostOS:
+        outcomes:
+          - pass:
+              when: "centos = 7"
+              message: "CentOS 7 is supported"
+          - pass:
+              when: "centos = 8"
+              message: "CentOS 8 is supported"
+          - fail:
+              when: "ubuntu = 16.04"
+              message: "Ubuntu 16.04 is not supported"
+          - pass:
+              when: "ubuntu = 18.04"
+              message: "Ubuntu 18.04 is supported"
+          - pass:
+              when: "ubuntu = 20.04"
+              message: "Ubuntu 20.04 is supported"
+    - diskUsage:
+        checkName: "Root Disk at least 200Gi"
+        collectorName: root-disk
+        outcomes:
+          - fail:
+              when: "total < 200Gi"
+              message: The disk containing directory / has less than 200Gi of total space.
+          - fail:
+              when: "used/total > 85%"
+              message: The disk containing directory / is more than 85% full.
+          - warn:
+              when: "used/total > 50%"
+              message: The disk containing directory / is more than 50% full.
+          - pass:
+              message: The disk is adequately specced and not filled up.
+    - http:
+        checkName: Can Access Replicated API
+        collectorName: get-replicated-app
+        outcomes:
+          - warn:
+              when: "error"
+              message: Error connecting to https://replicated.app
+          - pass:
+              when: "statusCode == 200"
+              message: Connected to https://replicated.app
+          - warn:
+              message: "Unexpected response"
+    - systemPackages:
+        collectorName: system-packages-mysql
+        checkName: "Checking for  MySQL"
+        outcomes:
+        - pass:
+            when: '{{ .Version }} = 8.0.32'
+            message: Package {{ .Name }} is installed and up to date.
+        - warn:
+            when: '{{ .Version }} > 8.0.x-1ubuntu18.04'
+            message: Package {{ .Name }} is installed, but not on version 9.x
+        - fail:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
+    - tcpPortStatus:
+        checkName: "Host HTTPS TCP Port Status"
+        collectorName: host-https-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 443 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 443.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 443. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 443 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Host HTTP TCP Port Status"
+        collectorName: host-http-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 80 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 80.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 80. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 80 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Host Kubernetes HTTP TCP Port Status"
+        collectorName: host-kubernetes-http-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 8080 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 8080.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 8080. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 8080 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Host SSH TCP Port Status"
+        collectorName: host-ssh-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 22 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 22.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 22. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 22 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Kubernetes API TCP Port Status"
+        collectorName: kubernetes-api-tcp-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 6443 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 6443.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 6443. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 6443 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Kubernetes etcd TCP Port Status"
+        collectorName: etcd-tcp-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 2379 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 2379.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 2379. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 2379 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Kubernetes etcd TCP Port Status"
+        collectorName: etcd-2-tcp-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 2380 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 2380.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 2380. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 2380 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Kubernetes Kublet TCP Port Status"
+        collectorName: kubernetes-kublet-tcp-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 10250 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 10250.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 10250. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 10250 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Kubernetes Weave TCP Port Status"
+        collectorName: kubernetes-weave-tcp-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 6783 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 6783.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 6783. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 6783 is open
+          - warn:
+              message: Unexpected port status
+    - udpPortStatus:
+        checkName: "Kubernetes Weave UDP Port Status"
+        collectorName: kubernetes-weave-udp-port
+        outcomes:
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 6783.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 6783 is open
+          - warn:
+              message: Unexpected port status
+    - udpPortStatus:
+        checkName: "Kubernetes Weave UDP Port Status"
+        collectorName: kubernetes-weave-2-udp-port
+        outcomes:
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 6784.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 6784 is open
+          - warn:
+              message: Unexpected port status
