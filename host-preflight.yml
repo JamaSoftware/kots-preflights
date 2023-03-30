@@ -1,7 +1,7 @@
 apiVersion: troubleshoot.sh/v1beta2
 kind: SupportBundle
 metadata:
-  name: example
+  name: host-preflights
 spec:
   hostCollectors:
     - cpu: {}
@@ -20,11 +20,15 @@ spec:
           - mysql-server
         ubuntu:
           - mysql-server
+        centos:
+          - mysql-server
     - systemPackages:
         collectorName: system-packages-mssql
         ubuntu:
           - mssql-server
         rhel:
+          - mssql-server
+        centos:
           - mssql-server
     - systemPackages:
         collectorName: system-packages-docker
@@ -32,6 +36,16 @@ spec:
           - docker
         rhel:
           - docker
+        centos:
+          - docker
+    - systemPackages:
+        collectorName: system-packages-kubernetes
+        ubuntu:
+          - kubectl
+        rhel:
+          - kubectl
+        centos:
+          - kubectl        
     - systemPackages:
         collectorName: system-packages-rhel
         rhel:
@@ -70,12 +84,32 @@ spec:
         collectorName: kubernetes-weave-2-udp-port
         port: 6784
   hostAnalyzers:
+    - hostOS:
+          outcomes:
+            - pass:
+                when: "centos = 7.8"
+                message: "CentOS 7.8 is supported"
+            - pass:
+                when: "centos = 8.4"
+                message: "CentOS 8.4 is supported" 
+            - pass:
+                when: "redhat = 8.6"
+                message: "RedHat 8.6 is supported"                
+            - fail:
+                when: "ubuntu = 16.04"
+                message: "Ubuntu 16.04 is not supported"
+            - pass:
+                when: "ubuntu = 18.04"
+                message: "Ubuntu 18.04 is supported"
+            - pass:
+                when: "ubuntu = 20.04"
+                message: "Ubuntu 20.04 is supported"
     - cpu:
         checkName: "Number of CPUs"
         outcomes:
           - fail:
               when: "count < 7"
-              message: At least 8 CPU cores are required, and 4 CPU cores are recommended
+              message: At least 8 CPU cores are required, and 4 CPU cores are the minimum
           - warn:
               when: "count < 15"
               message: At least 16 CPU cores are recommended
@@ -86,31 +120,14 @@ spec:
         checkName: "Amount of Memory"
         outcomes:
           - fail:
-              when: "< 30G"
+              when: "< 32G"
               message: At least 32G of memory is required, and 64G of memory is recommended
           - warn:
-              when: "< 31G"
-              message: At least 32G of memory is required, and 64G of memory is recommended
+              when: "< 64G"
+              message: 64G of memory is recommended
           - pass:
-              when: "> 63G"
-              message: The system has at least 64G of memory
-    - hostOS:
-        outcomes:
-          - pass:
-              when: "centos = 7"
-              message: "CentOS 7 is supported"
-          - pass:
-              when: "centos = 8"
-              message: "CentOS 8 is supported"
-          - fail:
-              when: "ubuntu = 16.04"
-              message: "Ubuntu 16.04 is not supported"
-          - pass:
-              when: "ubuntu = 18.04"
-              message: "Ubuntu 18.04 is supported"
-          - pass:
-              when: "ubuntu = 20.04"
-              message: "Ubuntu 20.04 is supported"
+              when: ">= 64G"
+              message: The system has at least 64G of memory    
     - diskUsage:
         checkName: "Root Disk at least 200Gi"
         collectorName: root-disk
@@ -119,8 +136,8 @@ spec:
               when: "total < 200Gi"
               message: The disk containing directory / has less than 200Gi of total space.
           - fail:
-              when: "used/total > 85%"
-              message: The disk containing directory / is more than 85% full.
+              when: "used/total < 40Gi"
+              message: The disk containing directory / has less than 40Gi.
           - warn:
               when: "used/total > 50%"
               message: The disk containing directory / is more than 50% full.
@@ -138,17 +155,48 @@ spec:
               message: Connected to https://replicated.app
           - warn:
               message: "Unexpected response"
+    #MySql
     - systemPackages:
         collectorName: system-packages-mysql
-        checkName: "Checking for  MySQL"
-        outcomes:
-        - pass:
-            when: '{{ .Version }} = 8.0.32'
-            message: Package {{ .Name }} is installed and up to date.
-        - warn:
-            when: '{{ .Version }} > 8.0.x-1ubuntu18.04'
-            message: Package {{ .Name }} is installed, but not on version 9.x
+        checkName: "Checking for MySQL"
+        outcomes:       
         - fail:
+            when: '{{ .IsInstalled }}'
+            message: Package {{ .Name }} is installed
+        - pass:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
+    #MSSql
+    - systemPackages:
+        collectorName: system-packages-mssql
+        checkName: "Checking for MSSQL"
+        outcomes:       
+        - fail:
+            when: '{{ .IsInstalled }}'
+            message: Package {{ .Name }} is installed
+        - pass:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
+    #Docker
+    - systemPackages:
+        collectorName: system-packages-docker
+        checkName: "Checking for Docker"
+        outcomes:       
+        - fail:
+            when: '{{ .IsInstalled }}'
+            message: Package {{ .Name }} is installed
+        - pass:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
+    #Kubernetes
+    - systemPackages:
+        collectorName: system-packages-kubernetes
+        checkName: "Checking for Kubernetes"
+        outcomes:       
+        - fail:
+            when: '{{ .IsInstalled }}'
+            message: Package {{ .Name }} is installed
+        - pass:
             when: '{{ not .IsInstalled }}'
             message: Package {{ .Name }} is not installed
     - tcpPortStatus:

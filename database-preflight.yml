@@ -1,0 +1,82 @@
+apiVersion: troubleshoot.sh/v1beta2
+kind: SupportBundle
+metadata:
+  name: database-preflights
+spec:
+  hostCollectors:
+    - cpu: {}
+    - memory: {}
+    - systemPackages:
+        collectorName: system-packages-mysql
+        rhel:
+          - mysql-server
+        ubuntu:
+          - mysql-server
+        centos:
+          - mysql-server
+        #windows validations
+    - systemPackages:
+        collectorName: system-packages-mssql
+        ubuntu:
+          - mssql-server
+        rhel:
+          - mssql-server
+        centos:
+          - mssql-server
+        #windows validations...
+  hostAnalyzers:    
+    - cpu:
+        checkName: "Number of CPUs"
+        outcomes:
+          - pass:
+              when: "count >= 16"
+              message: CPU for large installation (until 1000 active projects and 1000 concurrent users)
+          - pass:
+              when: "count >= 8"
+              message: CPU for medium installation (until 500 active projects and 500 concurrent users)
+          - pass:
+              when: "count >= 4"
+              message: CPU for small installation (until 100 active projects and 50 concurrent users)
+          - fail:
+              when: "count < 4"
+              message: This server should have at least 4 CPU cores          
+    - memory:
+        checkName: "Amount of Memory"
+        outcomes:
+          - fail:
+              when: "< 16G"
+              message: At least 16G of memory is required
+          - pass:
+              when: ">= 16G"
+              message: Memory RAM for small installation (until 100 active projects and 50 concurrent users)
+          - pass:
+              when: ">= 32G"
+              message: Memory RAM for medium installation (until 500 active projects and 500 concurrent users)
+          - pass:
+              when: ">= 64G"
+              message: Memory RAM for large installation (until 1000 active projects and 1000 concurrent users)    
+    #MySql
+    - systemPackages:
+        collectorName: system-packages-mysql
+        checkName: "Checking for  MySQL"
+        outcomes:
+        - pass:
+            when: '{{ .Version }} = 8.x'
+            message: Package {{ .Name }} is installed and up to date.
+        - fail:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
+    #MSSql
+    - systemPackages:
+        collectorName: system-packages-mssql
+        checkName: "Checking for MSSQL"
+        outcomes:       
+        - pass:
+            when: '{{ .Version }} = 14.x'
+            message: Package {{ .Name }} is installed
+        - pass:
+            when: '{{ .Version }} = 15.x'
+            message: Package {{ .Name }} is installed
+        - fail:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
