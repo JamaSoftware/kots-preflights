@@ -29,31 +29,31 @@ spec:
         checkName: "Number of CPUs"
         outcomes:
           - pass:
-              when: "count >= 16"
+              when: "count > 15"
               message: CPU for large installation (until 1000 active projects and 1000 concurrent users)
           - pass:
-              when: "count >= 8"
+              when: "count > 7"
               message: CPU for medium installation (until 500 active projects and 500 concurrent users)
           - pass:
-              when: "count >= 4"
+              when: "count > 3"
               message: CPU for small installation (until 100 active projects and 50 concurrent users)
           - fail:
-              when: "count < 4"
+              when: "count < 3"
               message: This server should have at least 4 CPU cores          
     - memory:
         checkName: "Amount of Memory"
         outcomes:
           - fail:
-              when: "< 16G"
+              when: "< 14G"
               message: At least 16G of memory is required
           - pass:
-              when: ">= 16G"
+              when: "> 14G"
               message: Memory RAM for small installation (until 100 active projects and 50 concurrent users)
           - pass:
-              when: ">= 32G"
+              when: "> 28G"
               message: Memory RAM for medium installation (until 500 active projects and 500 concurrent users)
           - pass:
-              when: ">= 64G"
+              when: "> 60G"
               message: Memory RAM for large installation (until 1000 active projects and 1000 concurrent users)    
     #MySql
     - systemPackages:
@@ -61,7 +61,7 @@ spec:
         checkName: "Checking for  MySQL"
         outcomes:
         - pass:
-            when: '{{ .Version }} = 8.x'
+            when: '{{ .Version = 8.x}} '
             message: Package {{ .Name }} is installed and up to date.
         - fail:
             when: '{{ not .IsInstalled }}'
@@ -72,10 +72,10 @@ spec:
         checkName: "Checking for MSSQL"
         outcomes:       
         - pass:
-            when: '{{ .Version }} = 14.x'
+            when: '{{ .Version = 14.x}}' 
             message: Package {{ .Name }} is installed
         - pass:
-            when: '{{ .Version }} = 15.x'
+            when: '{{ .Version = 15.x}} '
             message: Package {{ .Name }} is installed
         - fail:
             when: '{{ not .IsInstalled }}'

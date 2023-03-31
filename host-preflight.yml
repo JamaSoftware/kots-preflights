@@ -115,25 +115,25 @@ spec:
               message: At least 16 CPU cores are recommended
           - pass:
               when: "count > 15"
-              message: This server has at least 4 CPU cores
+              message: This server has at least 16 CPU cores
     - memory:
         checkName: "Amount of Memory"
         outcomes:
           - fail:
-              when: "< 32G"
+              when: "< 29G"
               message: At least 32G of memory is required, and 64G of memory is recommended
           - warn:
-              when: "< 64G"
+              when: "< 60G"
               message: 64G of memory is recommended
           - pass:
-              when: ">= 64G"
+              when: "> 60G"
               message: The system has at least 64G of memory    
     - diskUsage:
         checkName: "Root Disk at least 200Gi"
         collectorName: root-disk
         outcomes:
           - fail:
-              when: "total < 200Gi"
+              when: "total < 172Gi"
               message: The disk containing directory / has less than 200Gi of total space.
           - fail:
               when: "used/total < 40Gi"
