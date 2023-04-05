@@ -85,25 +85,26 @@ spec:
         port: 6784
   hostAnalyzers:
     - hostOS:
+          checkName: "Host OS Info"
           outcomes:
             - pass:
                 when: "centos = 7.8"
                 message: "CentOS 7.8 is supported"
             - pass:
-                when: "centos = 8.4"
-                message: "CentOS 8.4 is supported" 
+                when: "redhat = 7.8"
+                message: "RedHat 7.8 is supported" 
             - pass:
-                when: "redhat = 8.6"
-                message: "RedHat 8.6 is supported"                
-            - fail:
-                when: "ubuntu = 16.04"
-                message: "Ubuntu 16.04 is not supported"
+                when: "redhat = 8.4"
+                message: "RedHat 8.4 is supported"            
             - pass:
                 when: "ubuntu = 18.04"
                 message: "Ubuntu 18.04 is supported"
             - pass:
                 when: "ubuntu = 20.04"
                 message: "Ubuntu 20.04 is supported"
+            - fail:
+                when: ""
+                message: "Current OS is not supported, supported list (CentOS 7.8, RedHat 7.8 / 8.4, Ubuntu 18.04 / 20.04 )"
     - cpu:
         checkName: "Number of CPUs"
         outcomes:
