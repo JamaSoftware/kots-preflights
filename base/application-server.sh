@@ -59,8 +59,7 @@ supportbundle_macos_arm64(){
 	echo "Replicated Support Bundle loading for macOS arm64..."
 	wget -q -P /tmp $url/$current_version/support-bundle_darwin_arm64.tar.gz
 	tar zxf /tmp/support-bundle_darwin_arm64.tar.gz -C /tmp	
-	#wget -q $supportbundle_yaml -O /tmp/support-bundle.yaml
-	cp $supportbundle_yaml /tmp/support-bundle.yaml
+	wget -q $supportbundle_yaml -O /tmp/support-bundle.yaml	
 	/tmp/support-bundle /tmp/support-bundle.yaml
 	cleanup
 }
@@ -69,8 +68,7 @@ supportbundle_macos_x86_64(){
 	echo "Replicated Support Bundle loading for macOS x86_64..."
 	wget -q -P /tmp $url/$current_version/support-bundle_darwin_amd64.tar.gz
 	tar zxf /tmp/support-bundle_darwin_amd64.tar.gz -C /tmp
-	#wget -q $supportbundle_yaml -O /tmp/support-bundle.yaml
-	cp $supportbundle_yaml /tmp/support-bundle.yaml
+	wget -q $supportbundle_yaml -O /tmp/support-bundle.yaml	
 	/tmp/support-bundle /tmp/support-bundle.yaml
 	cleanup
 }
