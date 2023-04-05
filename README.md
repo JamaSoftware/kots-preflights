@@ -39,7 +39,7 @@ It's necessary to validate the customer environment before a KOTS installation t
 
 
 ### Online preflights
-    curl -s https://github.com/JamaSoftware/kots-preflights/blob/main/base/application-server.sh | sudo bash
+    curl -s https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/base/application-server.sh | sudo bash
 
 
 ## Database Server
@@ -58,4 +58,4 @@ It's necessary to validate the customer environment before a KOTS installation t
 
 
 ### Online preflights
-    curl -s https://github.com/JamaSoftware/kots-preflights/blob/main/base/database-server.sh | sudo bash
+    curl -s https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/base/database-server.sh | sudo bash
