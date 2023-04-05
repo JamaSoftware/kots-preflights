@@ -270,9 +270,7 @@ spec:
           - fail:
               when: "connection-refused"
               message: Connection to port 22 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
-          - warn:
-              when: "address-in-use"
-              message: Another process was already listening on port 22.
+          
           - fail:
               when: "connection-timeout"
               message: Timed out connecting to port 22. Check your firewall.
