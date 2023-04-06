@@ -6,7 +6,7 @@ current_version="v0.59.0"
 url="https://github.com/replicatedhq/troubleshoot/releases/download"
 
 #this file name can be replaced by an argument, but for test purposes is hard coded.
-supportbundle_yaml="https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/base/database-preflight.yml"
+supportbundle_yaml="https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/non-airgap/database-preflight.yml"
 
 
 cleanup(){

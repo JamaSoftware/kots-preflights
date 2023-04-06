@@ -30,22 +30,22 @@ spec:
         outcomes:
           - pass:
               when: "count > 15"
-              message: CPU for large installation (until 1000 active projects and 1000 concurrent users)
+              message: CPU cores for large installation (until 1000 active projects and 1000 concurrent users)
           - pass:
               when: "count > 7"
-              message: CPU for medium installation (until 500 active projects and 500 concurrent users)
+              message: CPU cores for medium installation (until 500 active projects and 500 concurrent users)
           - pass:
               when: "count > 3"
-              message: CPU for small installation (until 100 active projects and 50 concurrent users)
+              message: CPU cores for small installation (until 100 active projects and 50 concurrent users)
           - fail:
               when: "count < 3"
-              message: This server should have at least 4 CPU cores          
+              message: The server does not meet the minimum requirements. At least 4 CPU cores are required          
     - memory:
         checkName: "Amount of Memory"
         outcomes:
           - fail:
               when: "< 14G"
-              message: At least 16G of memory is required
+              message: The server does not meet the minimum requirements. At least 16G of memory is required
           - pass:
               when: "> 14G"
               message: Memory RAM for small installation (until 100 active projects and 50 concurrent users)

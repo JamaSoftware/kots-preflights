@@ -104,41 +104,41 @@ spec:
                 message: "Ubuntu 20.04 is supported"
             - fail:
                 when: ""
-                message: "Current OS is not supported, supported list (CentOS 7.8, RedHat 7.8 / 8.4, Ubuntu 18.04 / 20.04 )"
+                message: "Current OS is NOT supported, supported list (CentOS 7.8, RedHat 7.8 / 8.4, Ubuntu 18.04 / 20.04 )"
     - cpu:
         checkName: "Number of CPUs"
         outcomes:
           - fail:
               when: "count < 7"
-              message: At least 8 CPU cores are required, and 4 CPU cores are the minimum
+              message: The server does not meet the minimum requirements. At least 8 CPU cores are required
           - warn:
               when: "count < 15"
-              message: At least 16 CPU cores are recommended
+              message: The server meets the minimum requirements. 16 CPU cores are recommended
           - pass:
               when: "count > 15"
-              message: This server has at least 16 CPU cores
+              message: The server meets the recommended requirements
     - memory:
         checkName: "Amount of Memory"
         outcomes:
           - fail:
               when: "< 29G"
-              message: At least 32G of memory is required, and 64G of memory is recommended
+              message: The server does not meet the minimum requirements. At least 32G of memory is required
           - warn:
               when: "< 60G"
-              message: 64G of memory is recommended
+              message: The server meets the minimum requirements. 64G of memory is recommended
           - pass:
               when: "> 60G"
-              message: The system has at least 64G of memory    
+              message: The system meets the recommended requirements
     - diskUsage:
-        checkName: "Root Disk at least 200Gi"
+        checkName: "Root Disk at least 200GB"
         collectorName: root-disk
         outcomes:
           - fail:
               when: "total < 172Gi"
-              message: The disk containing directory / has less than 200Gi of total space.
+              message: The disk containing directory / has less than 200GB of total space.
           - fail:
-              when: "available < 40Gi"
-              message: The disk containing directory / has less than 40Gi.
+              when: "available < 40GB"
+              message: The disk containing directory / has less than 40GB.
           - warn:
               when: "used/total > 50%"
               message: The disk containing directory / is more than 50% full.
@@ -163,7 +163,7 @@ spec:
         outcomes:       
         - fail:
             when: '{{ .IsInstalled }}'
-            message: Package {{ .Name }} is installed
+            message: MySQL was found, but the system cannot be installed until {{ .Name }} is removed.
         - pass:
             when: '{{ not .IsInstalled }}'
             message: Package {{ .Name }} is not installed
@@ -174,7 +174,7 @@ spec:
         outcomes:       
         - fail:
             when: '{{ .IsInstalled }}'
-            message: Package {{ .Name }} is installed
+            message: MSSQL was found, but the system cannot be installed until {{ .Name }} is removed.
         - pass:
             when: '{{ not .IsInstalled }}'
             message: Package {{ .Name }} is not installed
@@ -185,7 +185,7 @@ spec:
         outcomes:       
         - fail:
             when: '{{ .IsInstalled }}'
-            message: Package {{ .Name }} is installed
+            message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
         - pass:
             when: '{{ not .IsInstalled }}'
             message: Package {{ .Name }} is not installed
@@ -196,7 +196,7 @@ spec:
         outcomes:       
         - fail:
             when: '{{ .IsInstalled }}'
-            message: Package {{ .Name }} is installed
+            message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
         - pass:
             when: '{{ not .IsInstalled }}'
             message: Package {{ .Name }} is not installed
@@ -269,14 +269,16 @@ spec:
         outcomes:
           - fail:
               when: "connection-refused"
-              message: Connection to port 22 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
-          
+              message: Connection to port 22 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.          
           - fail:
               when: "connection-timeout"
               message: Timed out connecting to port 22. Check your firewall.
           - fail:
               when: "error"
               message: Unexpected port status
+          - pass:
+              when: "address-in-use"
+              message: Port 22 is open
           - pass:
               when: "connected"
               message: Port 22 is open
