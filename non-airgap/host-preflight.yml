@@ -137,7 +137,7 @@ spec:
               when: "total < 172Gi"
               message: The disk containing directory / has less than 200GB of total space.
           - fail:
-              when: "available < 40GB"
+              when: "available < 38Gi"
               message: The disk containing directory / has less than 40GB.
           - warn:
               when: "used/total > 50%"
