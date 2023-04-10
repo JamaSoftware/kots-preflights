@@ -61,7 +61,7 @@ spec:
         checkName: "Checking for  MySQL"
         outcomes:
         - pass:
-            when: '{{ .Version = 8.x}} '
+            when: '{{ .IsInstalled }}'
             message: Package {{ .Name }} is installed and up to date.
         - fail:
             when: '{{ not .IsInstalled }}'
@@ -70,12 +70,9 @@ spec:
     - systemPackages:
         collectorName: system-packages-mssql
         checkName: "Checking for MSSQL"
-        outcomes:       
+        outcomes:
         - pass:
-            when: '{{ .Version = 14.x}}' 
-            message: Package {{ .Name }} is installed
-        - pass:
-            when: '{{ .Version = 15.x}} '
+            when: '{{ .IsInstalled }}'
             message: Package {{ .Name }} is installed
         - fail:
             when: '{{ not .IsInstalled }}'

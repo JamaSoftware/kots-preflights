@@ -9,11 +9,7 @@ spec:
     - hostOS: {}
     - diskUsage:
         collectorName: root-disk
-        path: /
-    - http:
-        collectorName: get-replicated-app
-        get:
-          url: https://replicated.app
+        path: /    
     - systemPackages:
         collectorName: system-packages-mysql
         rhel:
@@ -143,19 +139,7 @@ spec:
               when: "used/total > 50%"
               message: The disk containing directory / is more than 50% full.
           - pass:
-              message: The disk is adequately specced and not filled up.
-    - http:
-        checkName: Can Access Replicated API
-        collectorName: get-replicated-app
-        outcomes:
-          - warn:
-              when: "error"
-              message: Error connecting to https://replicated.app
-          - pass:
-              when: "statusCode == 200"
-              message: Connected to https://replicated.app
-          - warn:
-              message: "Unexpected response"
+              message: The disk is adequately specced and not filled up.    
     #MySql
     - systemPackages:
         collectorName: system-packages-mysql
