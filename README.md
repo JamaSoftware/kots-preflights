@@ -12,10 +12,10 @@ It's necessary to validate the environment before a KOTS installation to prevent
     In this folder you can find the executable files to run the preflights with an internet connection.
 
 ### Application Server
-    curl -s https://github.com/JamaSoftware/kots-preflights/blob/main/non-airgap/application-server.sh | sudo bash
+    curl -s https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/non-airgap/application-server.sh | sudo bash
 
 ### Database Server
-    curl -s https://github.com/JamaSoftware/kots-preflights/blob/main/non-airgap/database-server.sh | sudo bash
+    curl -s https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/non-airgap/database-server.sh | sudo bash
 
     
 # Airgap
