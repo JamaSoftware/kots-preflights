@@ -42,7 +42,7 @@ supportbundle_linux_os_x86_64(){
 	echo "Analyzing requirments for Jama KOTS on Linux x86_64..."
 	tar zxf airgap-host-preflight_linux$current_version.tar.gz -C /tmp
 	tar zxf /tmp/airgap-host-preflight_linux/support-bundle/support-bundle_linux_amd64.tar.gz -C /tmp
-	/tmp/support-bundle /tmp/airgap-host-preflight_linux/host-preflight$current_version.yml
+	/tmp/support-bundle /tmp/airgap-host-preflight_linux/host-preflight.yml
 	cleanup
 }
 
@@ -50,7 +50,7 @@ supportbundle_linux_os_arm64(){
 	echo "Analyzing requirments for Jama KOTS on Linux arm64..."
 	tar zxf airgap-host-preflight_linux$current_version.tar.gz -C /tmp
 	tar zxf /tmp/airgap-host-preflight_linux/support-bundle/support-bundle_linux_arm64.tar.gz -C /tmp
-	/tmp/support-bundle /tmp/airgap-host-preflight_linux/host-preflight$current_version.yml
+	/tmp/support-bundle /tmp/airgap-host-preflight_linux/host-preflight.yml
 	cleanup
 }
 
