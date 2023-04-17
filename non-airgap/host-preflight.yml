@@ -2,6 +2,7 @@ apiVersion: troubleshoot.sh/v1beta2
 kind: SupportBundle
 metadata:
   name: host-preflights
+  version: 0.0.2
 spec:
   hostCollectors:
     - cpu: {}
@@ -45,7 +46,7 @@ spec:
         rhel:
           - kubectl
         centos:
-          - kubectl        
+          - kubectl
     - systemPackages:
         collectorName: system-packages-rhel
         rhel:
@@ -83,28 +84,49 @@ spec:
     - udpPortStatus:
         collectorName: kubernetes-weave-2-udp-port
         port: 6784
+    - run:
+        collectorName: "PreflightVersion"
+        command: "echo"
+        args: [ "Preflight version - 0.0.2" ]
+    - run:
+        collectorName: "elasticSearch"
+        command: "sh"
+        args:
+          - -c
+          - |
+            if grep -Fxq "vm.max_map_count=262144" /etc/sysctl.conf
+            then
+                echo "vm.max_map already configured"
+            else
+                echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+            fi
+    - run:
+        collectorName: "checkElasticSearch"
+        command: "sysctl"
+        args: [ "-p" ]
+    - time: {}
   hostAnalyzers:
     - hostOS:
-          checkName: "Host OS Info"
-          outcomes:
-            - pass:
-                when: "centos = 7.8"
-                message: "CentOS 7.8 is supported"
-            - pass:
-                when: "redhat = 7.8"
-                message: "RedHat 7.8 is supported" 
-            - pass:
-                when: "redhat = 8.4"
-                message: "RedHat 8.4 is supported"            
-            - pass:
-                when: "ubuntu = 18.04"
-                message: "Ubuntu 18.04 is supported"
-            - pass:
-                when: "ubuntu = 20.04"
-                message: "Ubuntu 20.04 is supported"
-            - fail:
-                when: ""
-                message: "Current OS is NOT supported, supported list (CentOS 7.8, RedHat 7.8 / 8.4, Ubuntu 18.04 / 20.04 )"
+        checkName: "Host OS Info"
+        outcomes:
+          - pass:
+              when: "centos = 7.8"
+              message: "CentOS 7.8 is supported"
+          - pass:
+              when: "redhat = 7.8"
+              message: "RedHat 7.8 is supported"
+          - pass:
+              when: "redhat = 8.4"
+              message: "RedHat 8.4 is supported"
+          - pass:
+              when: "ubuntu = 18.04"
+              message: "Ubuntu 18.04 is supported"
+          - pass:
+              when: "ubuntu = 20.04"
+              message: "Ubuntu 20.04 is supported"
+          - fail:
+              when: ""
+              message: "Current OS is NOT supported, supported list (CentOS 7.8, RedHat 7.8 / 8.4, Ubuntu 18.04 / 20.04 )"
     - cpu:
         checkName: "Number of CPUs"
         outcomes:
@@ -160,46 +182,46 @@ spec:
     - systemPackages:
         collectorName: system-packages-mysql
         checkName: "Checking for MySQL"
-        outcomes:       
-        - fail:
-            when: '{{ .IsInstalled }}'
-            message: MySQL was found, but the system cannot be installed until {{ .Name }} is removed.
-        - pass:
-            when: '{{ not .IsInstalled }}'
-            message: Package {{ .Name }} is not installed
+        outcomes:
+          - fail:
+              when: '{{ .IsInstalled }}'
+              message: MySQL was found, but the system cannot be installed until {{ .Name }} is removed.
+          - pass:
+              when: '{{ not .IsInstalled }}'
+              message: Package {{ .Name }} is not installed
     #MSSql
     - systemPackages:
         collectorName: system-packages-mssql
         checkName: "Checking for MSSQL"
-        outcomes:       
-        - fail:
-            when: '{{ .IsInstalled }}'
-            message: MSSQL was found, but the system cannot be installed until {{ .Name }} is removed.
-        - pass:
-            when: '{{ not .IsInstalled }}'
-            message: Package {{ .Name }} is not installed
+        outcomes:
+          - fail:
+              when: '{{ .IsInstalled }}'
+              message: MSSQL was found, but the system cannot be installed until {{ .Name }} is removed.
+          - pass:
+              when: '{{ not .IsInstalled }}'
+              message: Package {{ .Name }} is not installed
     #Docker
     - systemPackages:
         collectorName: system-packages-docker
         checkName: "Checking for Docker"
-        outcomes:       
-        - fail:
-            when: '{{ .IsInstalled }}'
-            message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
-        - pass:
-            when: '{{ not .IsInstalled }}'
-            message: Package {{ .Name }} is not installed
+        outcomes:
+          - fail:
+              when: '{{ .IsInstalled }}'
+              message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
+          - pass:
+              when: '{{ not .IsInstalled }}'
+              message: Package {{ .Name }} is not installed
     #Kubernetes
     - systemPackages:
         collectorName: system-packages-kubernetes
         checkName: "Checking for Kubernetes"
-        outcomes:       
-        - fail:
-            when: '{{ .IsInstalled }}'
-            message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
-        - pass:
-            when: '{{ not .IsInstalled }}'
-            message: Package {{ .Name }} is not installed
+        outcomes:
+          - fail:
+              when: '{{ .IsInstalled }}'
+              message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
+          - pass:
+              when: '{{ not .IsInstalled }}'
+              message: Package {{ .Name }} is not installed
     - tcpPortStatus:
         checkName: "Host HTTPS TCP Port Status"
         collectorName: host-https-port
@@ -269,7 +291,7 @@ spec:
         outcomes:
           - fail:
               when: "connection-refused"
-              message: Connection to port 22 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.          
+              message: Connection to port 22 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
           - fail:
               when: "connection-timeout"
               message: Timed out connecting to port 22. Check your firewall.
@@ -419,3 +441,21 @@ spec:
               message: Port 6784 is open
           - warn:
               message: Unexpected port status
+    - time:
+        checkName: "NTP Status"
+        outcomes:
+          - fail:
+              when: "ntp == unsynchronized+inactive"
+              message: "System clock is not synchronized"
+          - warn:
+              when: "ntp == unsynchronized+active"
+              message: System clock not yet synchronized
+          - pass:
+              when: "ntp == synchronized+active"
+              message: "System clock is synchronized"
+          - warn:
+              when: "timezone != UTC"
+              message: "Non UTC timezone can interfere with system function"
+          - pass:
+              when: "timezone == UTC"
+              message: "Timezone is set to UTC"
