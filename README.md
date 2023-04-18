@@ -43,7 +43,7 @@ Depending on the OS where you need to install the application server select a fo
     
     ####curl commands
     curl https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/airgap/linux/airgap-database-server_linux.sh --output airgap-database-server_linux.sh
-    curl https://raw.githubusercontent.com/JamaSoftware/kots-preflights/blob/main/airgap/linux/airgap-database-preflight_linux.tar.gz --output airgap-database-preflight_linux.tar.gz
+    curl https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/airgap/linux/airgap-database-preflight_linux.tar.gz --output airgap-database-preflight_linux.tar.gz
     
 
     Those files must be place in the same directory to work.
