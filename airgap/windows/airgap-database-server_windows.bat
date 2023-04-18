@@ -1,70 +1,18 @@
-#!/bin/bash
+@echo off
+setlocal
+cd %cd%
+echo %cd%\airgap-database-preflight_windows.zip
+"C:\Program Files\7-Zip\7z.exe" x "%cd%\airgap-database-preflight_windows.zip" -o"C:\Temp\" 
+"C:\Program Files\7-Zip\7z.exe" x "C:\Temp\airgap-database-preflight_windows\support-bundle\support-bundle_windows_amd64.zip" -o"C:\Temp\" 
+C:\Temp\airgap-database-preflight_windows\support-bundle\support-bundle_windows_amd64\support-bundle.exe C:\Temp\airgap-database-preflight_windows\database-preflight.yml
 
-os=$(uname -s)
-arch=$(uname -m)
-
-cleanup(){
-	if [ -f /tmp/LICENSE ]
-	then
-		rm /tmp/LICENSE
-	fi
-	if [ -f /tmp/README.md ]
-	then
-		rm /tmp/README.md
-	fi
-	if [ -f /tmp/key.pub ]
-	then
-		rm /tmp/key.pub
-	fi
-	if [ -f /tmp/troubleshoot-sbom.tgz ]
-	then
-		rm /tmp/troubleshoot-sbom.tgz*
-	fi
-	if [ -f /tmp/preflight ]
-	then
-		rm /tmp/preflight*
-	fi
-	if [ -f /tmp/support-bundle ]
-	then
-		rm /tmp/support-bundle*
-	fi
-
-	rm -Rf /tmp/airgap-database-preflight_windows
-
-}
+RMDIR /S /Q "C:\Temp\airgap-database-preflight_windows"
+del "C:\Temp\support-bundle.exe"
+del "C:\Temp\key.pub"
+del "C:\Temp\LICENSE"
+del "C:\Temp\troubleshoot-sbom.tgz"
+del "C:\Temp\troubleshoot-sbom.tgz.sig"
 
 
-supportbundle_macos_arm64(){
-	echo "Analyzing requirments for Jama KOTS on macOS arm64..."
-	tar zxf airgap-database-preflight_windows.tar.gz -C /tmp
-	tar zxf /tmp/airgap-database-preflight_windows/support-bundle/support-bundle_windows_arm64.zip -C /tmp
-	/tmp/support-bundle /tmp/airgap-database-preflight_windows/database-preflight.yml
-	cleanup
-}
+exit /b
 
-supportbundle_macos_x86_64(){
-	echo "Analyzing requirments for Jama KOTS on macOS x86_64..."
-	tar zxf airgap-database-preflight_windows.tar.gz -C /tmp
-	tar zxf /tmp/airgap-database-preflight_windows/support-bundle/support-bundle_windows_amd64.zip -C /tmp
-	/tmp/support-bundle /tmp/airgap-database-preflight_windows/database-preflight.yml
-	cleanup
-}
-
-
-supportbundle(){
-	if [ "$os" == "Linux" ] && [ "$arch" == "x86_64" ]
-	then
-		supportbundle_linux_os_x86_64
-	elif [ "$os" == "Linux" ] && ([ "$arch" == "arm64"] || [ "$arch" == "aarch64" ])
-	then
-		supportbundle_linux_os_arm64
-	elif [ "$os" == "Darwin" ] && ([ "$arch" == "arm64" ] || [ "$arch" == "aarch64" ])
-	then
-		supportbundle_macos_arm64
-	elif [ "$os" == "Darwin" ] && [ "$arch" == "x86_64" ]
-	then
-		supportbundle_macos_x86_64
-	fi
-}
-
-supportbundle
