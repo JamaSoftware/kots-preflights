@@ -56,3 +56,6 @@ curl https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/airgap/
     
     To run the preflights:
         sudo bash <path to the files>/airgap-databse-server_<OS>.sh
+
+### For Windows
+For running the database preflights you need to install 7zip to unzip the files, by default the airgap-database-server_windows.bat will use the disk C:
