@@ -11,29 +11,11 @@ spec:
     - diskUsage:
         collectorName: root-disk
         path: /
-    - systemPackages:
-        collectorName: system-packages-mysql
-        rhel:
-          - mysql-server
-        ubuntu:
-          - mysql-server
-        centos:
-          - mysql-server
-        #windows validations
-    - systemPackages:
-        collectorName: system-packages-mssql
-        ubuntu:
-          - mssql-server
-        rhel:
-          - mssql-server
-        centos:
-          - mssql-server
-        #windows validations...
     - run:
         collectorName: "PreflightVersion"
         command: "echo"
         args: [ "Preflight version - 0.0.2" ]
-  hostAnalyzers:
+  hostAnalyzers:    
     - cpu:
         checkName: "Number of CPUs"
         outcomes:
@@ -48,7 +30,7 @@ spec:
               message: CPU cores for small installation (until 100 active projects and 50 concurrent users)
           - fail:
               when: "count < 3"
-              message: The server does not meet the minimum requirements. At least 4 CPU cores are required
+              message: The server does not meet the minimum requirements. At least 4 CPU cores are required          
     - memory:
         checkName: "Amount of Memory"
         outcomes:
@@ -64,46 +46,3 @@ spec:
           - pass:
               when: "> 60G"
               message: Memory RAM for large installation (until 1000 active projects and 1000 concurrent users)
-    - hostOS:
-        checkName: "Host OS Info"
-        outcomes:
-          - pass:
-              when: "centos = 7.8"
-              message: "CentOS 7.8 is supported"
-          - pass:
-              when: "redhat = 7.8"
-              message: "RedHat 7.8 is supported"
-          - pass:
-              when: "redhat = 8.4"
-              message: "RedHat 8.4 is supported"
-          - pass:
-              when: "ubuntu = 18.04"
-              message: "Ubuntu 18.04 is supported"
-          - pass:
-              when: "ubuntu = 20.04"
-              message: "Ubuntu 20.04 is supported"
-          - fail:
-              when: ""
-              message: "Current OS is NOT supported, supported list (CentOS 7.8, RedHat 7.8 / 8.4, Ubuntu 18.04 / 20.04 )"
-    #MySql
-    - systemPackages:
-        collectorName: system-packages-mysql
-        checkName: "Checking for  MySQL"
-        outcomes:
-          - pass:
-              when: '{{ .IsInstalled }}'
-              message: Package {{ .Name }} is installed and up to date.
-          - fail:
-              when: '{{ not .IsInstalled }}'
-              message: Package {{ .Name }} is not installed
-    #MSSql
-    - systemPackages:
-        collectorName: system-packages-mssql
-        checkName: "Checking for MSSQL"
-        outcomes:
-          - pass:
-              when: '{{ .IsInstalled }}'
-              message: Package {{ .Name }} is installed
-          - fail:
-              when: '{{ not .IsInstalled }}'
-              message: Package {{ .Name }} is not installed
