@@ -2,7 +2,7 @@ apiVersion: troubleshoot.sh/v1beta2
 kind: SupportBundle
 metadata:
   name: host-preflights
-  version: 0.0.2
+  version: 0.0.3
 spec:
   hostCollectors:
     - cpu: {}
@@ -87,7 +87,7 @@ spec:
     - run:
         collectorName: "PreflightVersion"
         command: "echo"
-        args: [ "Preflight version - 0.0.2" ]
+        args: [ "Preflight version - 0.0.3" ]
     - run:
         collectorName: "elasticSearch"
         command: "sh"
@@ -106,27 +106,6 @@ spec:
         args: [ "-p" ]    
     - time: {}
   hostAnalyzers:
-    - hostOS:
-          checkName: "Host OS Info"
-          outcomes:
-            - pass:
-                when: "centos = 7.8"
-                message: "CentOS 7.8 is supported"
-            - pass:
-                when: "redhat = 7.8"
-                message: "RedHat 7.8 is supported" 
-            - pass:
-                when: "redhat = 8.4"
-                message: "RedHat 8.4 is supported"            
-            - pass:
-                when: "ubuntu = 18.04"
-                message: "Ubuntu 18.04 is supported"
-            - pass:
-                when: "ubuntu = 20.04"
-                message: "Ubuntu 20.04 is supported"
-            - fail:
-                when: ""
-                message: "Current OS is NOT supported, supported list (CentOS 7.8, RedHat 7.8 / 8.4, Ubuntu 18.04 / 20.04 )"
     - cpu:
         checkName: "Number of CPUs"
         outcomes:
