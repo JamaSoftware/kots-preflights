@@ -2,7 +2,7 @@ apiVersion: troubleshoot.sh/v1beta2
 kind: SupportBundle
 metadata:
   name: database-preflights
-  version: 0.0.2
+  version: 0.0.3
 spec:
   hostCollectors:
     - cpu: {}
@@ -14,7 +14,7 @@ spec:
     - run:
         collectorName: "PreflightVersion"
         command: "echo"
-        args: [ "Preflight version - 0.0.2" ]
+        args: [ "Preflight version - 0.0.3" ]
     - run:
         collectorName: "db_collation"
         command: "sh"
