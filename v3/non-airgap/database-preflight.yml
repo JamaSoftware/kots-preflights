@@ -1,0 +1,81 @@
+apiVersion: troubleshoot.sh/v1beta2
+kind: SupportBundle
+metadata:
+  name: database-preflights
+  version: 0.0.3
+spec:
+  hostCollectors:
+    - cpu: {}
+    - memory: {}
+    - hostOS: {}
+    - diskUsage:
+        collectorName: root-disk
+        path: /
+    - run:
+        collectorName: "PreflightVersion"
+        command: "echo"
+        args: [ "Preflight version - 0.0.3" ]
+    - run:
+        collectorName: "db_collation"
+        command: "sh"
+        args:
+          - "-c"
+          - 'sh mysqldb_collation_check.sh -t "$TMP_TENANTID" -i "$TMP_HOSTIP" -o "$TMP_PORTNUM" -u "$TMP_USERNAME" -p "$TMP_PASS"'
+  hostAnalyzers:
+    - cpu:
+        checkName: "Number of CPUs"
+        outcomes:
+          - pass:
+              when: "count > 15"
+              message: CPU cores for large installation (until 1000 active projects and 1000 concurrent users)
+          - pass:
+              when: "count > 7"
+              message: CPU cores for medium installation (until 500 active projects and 500 concurrent users)
+          - pass:
+              when: "count > 3"
+              message: CPU cores for small installation (until 100 active projects and 50 concurrent users)
+          - fail:
+              when: "count < 3"
+              message: The server does not meet the minimum requirements. At least 4 CPU cores are required
+    - memory:
+        checkName: "Amount of Memory"
+        outcomes:
+          - fail:
+              when: "< 14G"
+              message: The server does not meet the minimum requirements. At least 16G of memory is required
+          - pass:
+              when: "> 14G"
+              message: Memory RAM for small installation (until 100 active projects and 50 concurrent users)
+          - pass:
+              when: "> 28G"
+              message: Memory RAM for medium installation (until 500 active projects and 500 concurrent users)
+          - pass:
+              when: "> 60G"
+              message: Memory RAM for large installation (until 1000 active projects and 1000 concurrent users)
+  analyzers:
+    - textAnalyze:
+        checkName: "Database Collation"
+        fileName: host-collectors/run-host/db_collation.txt
+        regexGroups: '(?P<NoActionMessage>(?P<NoAction>No) database items need to be upgraded.)|(?P<VersionMessage>(?P<Version>Your) database server version is (?P<VersionNumber>.*?)\. MySQL 8\.0\.x or the newer version is required for utf8mb4 character set\/collation migration\.)|(?P<DuplicateMessage>(?P<Duplicate>\d+) duplicate user names were found! That needs to be fixed before utf8mb4 collation migration\.)|(?P<NotFoundMessage>(?P<NotFound>ERROR): database (?P<NotFoundName>.+?) is not found!)|(?P<ArgsMessage>(?P<Args>ERROR): (?P<ArgsName>.+?) requires user name and pw as args.)|(?P<FailedMessage>(?P<Failed>")(?P<FailedCommand>.+?)" command failed with exit code (?P<FailedCode>.+?)\.)'
+        outcomes:
+          - pass:
+              when: "NoAction = No"
+              message: "{{ .NoActionMessage }}"
+          - fail:
+              when: "Version = Your"
+              message: "{{ .VersionMessage }}"
+          - fail:
+              when: "Duplicate > 0"
+              message: "{{ .DuplicateMessage }}"
+          - fail:
+              when: "NotFound = ERROR"
+              message: "{{ .NotFoundMessage }} Please contact the administrator."
+          - fail:
+              when: "Args = ERROR"
+              message: "{{ .ArgsMessage }} Please contact the administrator."
+          - fail:
+              when: 'Failed = "'
+              message: "{{ .FailedMessage }} Please contact the administrator."
+          - fail:
+              message: "Please run the \"mysql_collation_upgrade.sh\" script to apply the collation migration to your database."
+              uri: "https://github.com/JamaSoftware/kots-preflights/blob/main/v3/non-airgap/mysqldb_collation_upgrade.sh"
