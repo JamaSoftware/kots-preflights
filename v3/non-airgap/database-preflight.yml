@@ -20,7 +20,7 @@ spec:
         command: "sh"
         args:
           - "-c"
-          - 'sh mysqldb_collation_check.sh -t "$TMP_TENANTID" -i "$TMP_HOSTIP" -o "$TMP_PORTNUM" -u "$TMP_USERNAME" -p "$TMP_PASS"'
+          - 'sh /tmp/mysqldb_collation_check.sh -t "$TMP_TENANTID" -i "$TMP_HOSTIP" -o "$TMP_PORTNUM" -u "$TMP_USERNAME" -p "$TMP_PASS"'
   hostAnalyzers:
     - cpu:
         checkName: "Number of CPUs"
