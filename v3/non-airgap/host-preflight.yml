@@ -1,0 +1,455 @@
+apiVersion: troubleshoot.sh/v1beta2
+kind: SupportBundle
+metadata:
+  name: host-preflights
+  version: 0.0.4
+spec:
+  hostCollectors:
+    - cpu: {}
+    - memory: {}
+    - hostOS: {}
+    - diskUsage:
+        collectorName: root-disk
+        path: /
+    - diskUsage:
+        collectorName: var-space
+        path: /var
+    - http:
+        collectorName: get-replicated-app
+        get:
+          url: https://replicated.app
+    - systemPackages:
+        collectorName: system-packages-mysql
+        rhel:
+          - mysql-server
+        ubuntu:
+          - mysql-server
+    - systemPackages:
+        collectorName: system-packages-mssql
+        ubuntu:
+          - mssql-server
+        rhel:
+          - mssql-server
+    - systemPackages:
+        collectorName: system-packages-docker
+        ubuntu:
+          - docker
+        rhel:
+          - docker
+    - systemPackages:
+        collectorName: system-packages-containerd
+        ubuntu:
+          - containerd.io
+        rhel:
+          - containerd.io
+    - systemPackages:
+        collectorName: system-packages-kubernetes
+        ubuntu:
+          - kubectl
+        rhel:
+          - kubectl
+    - systemPackages:
+        collectorName: system-packages-rhel
+        rhel:
+          - podman
+          - buildah
+          - skopeo
+          - runc
+          - conmon
+          - udica
+          - container-selinux
+    - tcpPortStatus:
+        collectorName: host-https-port
+        port: 443
+    - tcpPortStatus:
+        collectorName: host-http-port
+        port: 80
+    - tcpPortStatus:
+        collectorName: host-kubernetes-http-port
+        port: 8080
+    - tcpPortStatus:
+        collectorName: host-ssh-port
+        port: 22
+    - tcpPortStatus:
+        collectorName: kubernetes-api-tcp-port
+        port: 6443
+    - tcpPortStatus:
+        collectorName: etcd-tcp-port
+        port: 2379
+    - tcpPortStatus:
+        collectorName: etcd-2-tcp-port
+        port: 2380
+    - tcpPortStatus:
+        collectorName: kubernetes-kublet-tcp-port
+        port: 10250
+    - tcpPortStatus:
+        collectorName: kubernetes-weave-tcp-port
+        port: 6783
+    - udpPortStatus:
+        collectorName: kubernetes-flannel-udp-port
+        port: 8472
+    - run:
+        collectorName: "PreflightVersion"
+        command: "echo"
+        args: [ "Preflight version - 0.0.4" ]
+    - run:
+        collectorName: "elasticSearch"
+        command: "sh"
+        args:
+          - -c
+          - |
+            if grep -Fxq "vm.max_map_count=262144" /etc/sysctl.conf
+            then
+                echo "vm.max_map already configured"
+            else
+                echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+            fi
+    - run:
+        collectorName: "var-type"
+        command: "sh"
+        args:
+          - "-c"
+          - 'file /var'
+    - run:
+        collectorName: "checkElasticSearch"
+        command: "sysctl"
+        args: [ "-p" ]    
+    - time: {}
+  hostAnalyzers:
+    - cpu:
+        checkName: "Number of CPUs"
+        outcomes:
+          - fail:
+              when: "count < 7"
+              message: The server does not meet the minimum requirements. At least 8 CPU cores are required
+          - warn:
+              when: "count < 15"
+              message: The server meets the minimum requirements. 16 CPU cores are recommended
+          - pass:
+              when: "count > 15"
+              message: The server meets the recommended requirements
+    - memory:
+        checkName: "Amount of Memory"
+        outcomes:
+          - fail:
+              when: "< 29G"
+              message: The server does not meet the minimum requirements. At least 32G of memory is required
+          - warn:
+              when: "< 60G"
+              message: The server meets the minimum requirements. 64G of memory is recommended
+          - pass:
+              when: "> 60G"
+              message: The system meets the recommended requirements
+    - diskUsage:
+        checkName: "Root Disk at least 256GB"
+        collectorName: root-disk
+        outcomes:
+          - warn:
+              when: "total < 228Gi"
+              message: The disk containing directory / has less than 256GB of total space.
+          - fail:
+              when: "total < 186Gi"
+              message: The disk containing directory / has less than 200GB.
+          - warn:
+              when: "used/total > 50%"
+              message: The disk containing directory / is more than 50% full.
+          - pass:
+              message: The disk is adequately specced and not filled up.
+    - diskUsage:
+        checkName: "/var directory space at least 80GB"
+        collectorName: var-space
+        outcomes:
+          - fail:
+              when: "total < 75Gi"
+              message: The /var directory has less than 80GB of space.
+          - pass:
+              message: The /var directory has enough space.
+    - http:
+        checkName: Can Access Replicated API
+        collectorName: get-replicated-app
+        outcomes:
+          - warn:
+              when: "error"
+              message: Error connecting to https://replicated.app
+          - pass:
+              when: "statusCode == 200"
+              message: Connected to https://replicated.app
+          - warn:
+              message: "Unexpected response"
+    #MySql
+    - systemPackages:
+        collectorName: system-packages-mysql
+        checkName: "Checking for MySQL"
+        outcomes:       
+        - fail:
+            when: '{{ .IsInstalled }}'
+            message: MySQL was found, but the system cannot be installed until {{ .Name }} is removed.
+        - pass:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
+    #MSSql
+    - systemPackages:
+        collectorName: system-packages-mssql
+        checkName: "Checking for MSSQL"
+        outcomes:       
+        - fail:
+            when: '{{ .IsInstalled }}'
+            message: MSSQL was found, but the system cannot be installed until {{ .Name }} is removed.
+        - pass:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
+    #Docker
+    - systemPackages:
+        collectorName: system-packages-docker
+        checkName: "Checking for Docker"
+        outcomes:       
+        - fail:
+            when: '{{ .IsInstalled }}'
+            message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
+        - pass:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
+    #Containerd
+    - systemPackages:
+        collectorName: system-packages-containerd
+        checkName: "Checking for ContainerD"
+        outcomes:
+          - fail:
+              when: '{{ .IsInstalled }}'
+              message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
+          - pass:
+              when: '{{ not .IsInstalled }}'
+              message: Package {{ .Name }} is not installed
+    - systemPackages:
+        collectorName: system-packages-rhel
+        checkName: "Checking for Container tools (RHEL)"
+        outcomes:
+          - fail:
+              when: '{{ .IsInstalled }}'
+              message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
+          - pass:
+              when: '{{ not .IsInstalled }}'
+              message: Package {{ .Name }} is not installed
+    #Kubernetes
+    - systemPackages:
+        collectorName: system-packages-kubernetes
+        checkName: "Checking for Kubernetes"
+        outcomes:       
+        - fail:
+            when: '{{ .IsInstalled }}'
+            message: Package {{ .Name }} was found, but the system cannot be installed until {{ .Name }} is removed.
+        - pass:
+            when: '{{ not .IsInstalled }}'
+            message: Package {{ .Name }} is not installed
+    - tcpPortStatus:
+        checkName: "Host HTTPS TCP Port Status"
+        collectorName: host-https-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 443 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 443.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 443. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 443 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Host HTTP TCP Port Status"
+        collectorName: host-http-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 80 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 80.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 80. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 80 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Host Kubernetes HTTP TCP Port Status"
+        collectorName: host-kubernetes-http-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 8080 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 8080.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 8080. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 8080 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Host SSH TCP Port Status"
+        collectorName: host-ssh-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 22 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.          
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 22. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "address-in-use"
+              message: Port 22 is open
+          - pass:
+              when: "connected"
+              message: Port 22 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Kubernetes API TCP Port Status"
+        collectorName: kubernetes-api-tcp-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 6443 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 6443.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 6443. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 6443 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Kubernetes etcd TCP Port Status"
+        collectorName: etcd-tcp-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 2379 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 2379.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 2379. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 2379 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Kubernetes etcd TCP Port Status"
+        collectorName: etcd-2-tcp-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 2380 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 2380.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 2380. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 2380 is open
+          - warn:
+              message: Unexpected port status
+    - tcpPortStatus:
+        checkName: "Kubernetes Kublet TCP Port Status"
+        collectorName: kubernetes-kublet-tcp-port
+        outcomes:
+          - fail:
+              when: "connection-refused"
+              message: Connection to port 10250 was refused. This is likely to be a routing problem since this preflight configures a test server to listen on this port.
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 10250.
+          - fail:
+              when: "connection-timeout"
+              message: Timed out connecting to port 10250. Check your firewall.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 10250 is open
+          - warn:
+              message: Unexpected port status
+    - udpPortStatus:
+        checkName: "Kubernetes Flannel UDP Port Status"
+        collectorName: kubernetes-flannel-udp-port
+        outcomes:
+          - warn:
+              when: "address-in-use"
+              message: Another process was already listening on port 8472.
+          - fail:
+              when: "error"
+              message: Unexpected port status
+          - pass:
+              when: "connected"
+              message: Port 8472 is open
+          - warn:
+              message: Unexpected port status
+    - time:
+        checkName: "NTP Status"
+        outcomes:
+          - fail:
+              when: "ntp == unsynchronized+inactive"
+              message: "System clock is not synchronized"
+          - warn:
+              when: "ntp == unsynchronized+active"
+              message: System clock not yet synchronized
+          - pass:
+              when: "ntp == synchronized+active"
+              message: "System clock is synchronized"
+          - warn:
+              when: "timezone != UTC"
+              message: "Non UTC timezone can interfere with system function"
+          - pass:
+              when: "timezone == UTC"
+              message: "Timezone is set to UTC"
+  analyzers:
+    - textAnalyze:
+        checkName: "/var directory type"
+        fileName: host-collectors/run-host/var-type.txt
+        regexGroups: '(?P<VarPath>.*?): (((?P<VarType>.*?) link to)|(.*))'
+        outcomes:
+          - fail:
+              when: "VarType = symbolic"
+              message: '{{ .VarPath }} directory type is "symlink", which is not compatible.'
+          - pass:
+              message: "{{ .VarPath }} directory type is compatible."
