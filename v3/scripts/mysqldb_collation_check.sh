@@ -93,7 +93,7 @@ non_mb4_sql="SELECT (a.not_utf8mb4_count + b.not_utf8mb4_count + c.not_utf8mb4_c
 
 check_non_mb4=$(${mysql_connection_str} --skip-column-names -e "${non_mb4_sql}")
 
-if [ "${check_non_mb4:-0}" -gt 0 ]; then
+if [[ (${check_non_mb4} > 0) ]]; then
     echo "${tenant_id} is about ${check_non_mb4} non-utfmb4 items need to be fixed."  
     echo "Start tenant collation checking ... "
 else 
