@@ -24,15 +24,15 @@ print_help () {
     echo "      ./mysqldb_collation_check.sh -t <tenant_db> -i <host_ip> -o <port_num> -u <db_user> -p <db_password>"
 }
 
-if [[ $1 == "help" ]]; then
+if [ $1 == "help" ]; then
     print_help
     exit 1
-fi 
+fi
 
 #echo "The arguments passed in are : $@"
 
 while getopts t:u:p:i:o:h option
-do 
+do
     case "${option}"
         in
         t)tenant_db=${OPTARG};;
@@ -73,26 +73,27 @@ exit 1
 fi
 
 non_mb4_sql="SELECT (a.not_utf8mb4_count + b.not_utf8mb4_count + c.not_utf8mb4_count + d.not_utf8mb4_count) not_utf8mb4_count
-            FROM (SELECT s.schema_name, SUM(IF(( s.default_character_set_name <> '${MYSQL_CHAR_ENCODING}' 
+            FROM (SELECT s.schema_name, SUM(IF(( s.default_character_set_name <> '${MYSQL_CHAR_ENCODING}'
             OR s.default_collation_name <> '${MYSQL_COLL_ENCODING}'), 1, 0)) not_utf8mb4_count
             FROM information_schema.schemata s WHERE s.schema_name =  '${tenant_id}' GROUP  BY s.schema_name) a
-            JOIN (SELECT t.table_schema,SUM(IF(( co.character_set_name <> '${MYSQL_CHAR_ENCODING}' 
+            JOIN (SELECT t.table_schema,SUM(IF(( co.character_set_name <> '${MYSQL_CHAR_ENCODING}'
             OR t.table_collation <> '${MYSQL_COLL_ENCODING}'), 1, 0)) not_utf8mb4_count
-            FROM information_schema.TABLES AS t 
+            FROM information_schema.TABLES AS t
             JOIN information_schema.collations AS co ON t.table_collation = co.collation_name
             WHERE t.table_schema= '${tenant_id}' AND t.table_type = 'BASE TABLE'
             GROUP  BY t.table_schema) b ON a.schema_name = b.table_schema
-            JOIN (SELECT table_schema,SUM(IF(( character_set_name <> '${MYSQL_CHAR_ENCODING}' 
+            JOIN (SELECT table_schema,SUM(IF(( character_set_name <> '${MYSQL_CHAR_ENCODING}'
             OR collation_name <> '${MYSQL_COLL_ENCODING}'), 1, 0)) not_utf8mb4_count
-            FROM information_schema.COLUMNS 
+            FROM information_schema.COLUMNS
             WHERE table_schema= '${tenant_id}'
             GROUP  BY table_schema) c ON c.table_schema = b.table_schema
             JOIN (SELECT  r.routine_schema,SUM(IF(r.database_collation <> '${MYSQL_COLL_ENCODING}', 1, 0)) not_utf8mb4_count
-            FROM information_schema.routines AS r WHERE r.routine_schema= '${tenant_id}' 
+            FROM information_schema.routines AS r WHERE r.routine_schema= '${tenant_id}'
             GROUP BY r.routine_schema) d ON d.routine_schema = c.table_schema;"
 
 check_non_mb4=$(${mysql_connection_str} --skip-column-names -e "${non_mb4_sql}")
-if [[ (${check_non_mb4} > 0) ]]; then
+
+if [ "${check_non_mb4:-0}" -gt 0 ]; then
     echo "${tenant_id} is about ${check_non_mb4} non-utfmb4 items need to be fixed."  
     echo "Start tenant collation checking ... "
 else 
