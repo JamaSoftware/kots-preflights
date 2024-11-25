@@ -38,13 +38,17 @@ cleanup(){
 	then
 		rm /tmp/support-bundle*
 	fi
+	if [ -f /tmp/mysqldb_collation_check.sh ]
+	then
+		rm /tmp/mysqldb_collation*
+	fi
 }
 
 
 supportbundle_linux_os_x86_64(){
 	echo "Replicated Support Bundle loading for Linux x86_64..."
 	wget -q -P /tmp $url/$current_version/support-bundle_linux_amd64.tar.gz
-	tar zxf /tmp/support-bundle_linux_amd64.tar.gz -C /tmp	
+	tar zxf /tmp/support-bundle_linux_amd64.tar.gz -C /tmp
 	wget -q $supportbundle_yaml -O /tmp/support-bundle.yaml
 	wget -q $collation_check_sh -O /tmp/mysqldb_collation_check.sh
 	wget -q $collation_upgrade_sh -O /tmp/mysqldb_collation_upgrade.sh
