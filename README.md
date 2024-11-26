@@ -65,8 +65,7 @@ In this folder, you can find the files to check your environment without the int
 
 
 ## Application Server
-Depending on the OS where you need to install the application server select a folder (mac or linux).
-Download the files "airgap-application-server_<OS>.sh" and "airgap-host-preflight_<OS>.tar.gz"  (OS stands for the operative system, the folder you chose)
+Download the files "airgap-application-server_linux.sh" and "airgap-host-preflight_linux.tar.gz"
 
 > Note:  
 >Execute these commands to download the files and copy them to the application server.
@@ -108,8 +107,7 @@ Download the files "airgap-application-server_<OS>.sh" and "airgap-host-prefligh
         sudo bash <path to the files>/airgap-application-server_<OS>.sh
 
 ## Database Server
-Depending on the OS where you need to install the application server select a folder (mac or linux).
-Download the files "airgap-database-server_<OS>.sh" and "airgap-database-preflight_<OS>.tar.gz"  (OS stands for the operative system, the folder you chose)
+Download the files "airgap-database-server_linux.sh", "airgap-database-preflight_linux.tar.gz" and "mysqldb_collation_upgrade.sh"
 
 
 > Note:  
@@ -137,6 +135,7 @@ The second script upgrades all the instances where the collation is different fr
         sudo bash ./airgap-database-server_linux.sh -t <tenant_db> -i <host_ip> -o <port_num> -u <db_user> -p <db_password>
     
     To update the collation after the check:
+        chmod +x ./mysqldb_collation_upgrade.sh
         sudo bash ./mysqldb_collation_upgrade.sh -d no -t <tenant_db> -i <host_ip> -o <port_num> -u <db_user> -p <db_password>
 
 * ### V2
@@ -166,4 +165,4 @@ The second script upgrades all the instances where the collation is different fr
         sudo bash <path to the files>/airgap-databse-server_<OS>.sh
 
 ### For Windows
-Windows is not currently supported for the preflight scripts. For windows-based databases you can run the preflight scripts remotely from a mac or a linux machine and use the host ip (-i) and port number (-o) options.
+Windows is not currently supported for the preflight scripts. For windows-based databases you can run the preflight scripts remotely from a linux machine and use the host ip (-i) and port number (-o) options.
