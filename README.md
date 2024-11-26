@@ -44,14 +44,14 @@ It's necessary to validate the environment before a KOTS installation to prevent
       <br /><br />
       The second script upgrades all the instances where the collation is different from `utf8mb4`. This script should **only** be run if prompted by the first script.
       <br /><br />
-      :bangbang: You must have `wget` and `mysql` version 8 installed in your machine to run these scripts.
+      :bangbang: You must have `wget` and `mysql` client version 8 installed in your machine to run these scripts.
       <br /><br />
-      `curl -s https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/v3/non-airgap/database-server.sh | sudo bash -s -- -t <tenant_db> -i <host_ip> -o <port_num> -u <db_user> -p <db_password>`
+      `curl -s https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/v3/non-airgap/database-server.sh | sudo bash -s -- -t <tenant_db> -i <host> -o <port_num> -u <db_user> -p <db_password>`
 
       ### To update the collation after the check:
       Open the folder where the files were downloaded and run:
 
-      `curl -s https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/v3/scripts/mysqldb_collation_upgrade.sh | sudo bash -s -- -d no -t <tenant_db> -i <host_ip> -o <port_num> -u <db_user> -p <db_password>`
+      `curl -s https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/v3/scripts/mysqldb_collation_upgrade.sh | sudo bash -s -- -d no -t <tenant_db> -i <host> -o <port_num> -u <db_user> -p <db_password>`
 
     * ### V2
       `curl -s https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/v2/non-airgap/database-server.sh | sudo bash`
@@ -120,7 +120,7 @@ The first script checks the collation of each database table. If it's different 
 
 The second script upgrades all the instances where the collation is different from `utf8mb4`. This script should **only** be run if prompted by the first script.
 
-:bangbang: You must have `wget` and `mysql` version 8 installed in your machine to run these scripts.
+:bangbang: You must have `wget` and `mysql` client version 8 installed in your machine to run these scripts.
 
 `curl https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/v3/airgap/linux/airgap-database-server_linux.sh --output airgap-database-server_linux.sh`
 
@@ -132,11 +132,11 @@ The second script upgrades all the instances where the collation is different fr
         chmod +x ./airgap-database-server_linux.sh
     
     To run the preflights:
-        sudo bash ./airgap-database-server_linux.sh -t <tenant_db> -i <host_ip> -o <port_num> -u <db_user> -p <db_password>
+        sudo bash ./airgap-database-server_linux.sh -t <tenant_db> -i <host> -o <port_num> -u <db_user> -p <db_password>
     
     To update the collation after the check:
         chmod +x ./mysqldb_collation_upgrade.sh
-        sudo bash ./mysqldb_collation_upgrade.sh -d no -t <tenant_db> -i <host_ip> -o <port_num> -u <db_user> -p <db_password>
+        sudo bash ./mysqldb_collation_upgrade.sh -d no -t <tenant_db> -i <host> -o <port_num> -u <db_user> -p <db_password>
 
 * ### V2
 `curl https://raw.githubusercontent.com/JamaSoftware/kots-preflights/main/v2/airgap/linux/airgap-database-server_linux.sh --output airgap-database-server_linux.sh`
@@ -165,4 +165,4 @@ The second script upgrades all the instances where the collation is different fr
         sudo bash <path to the files>/airgap-databse-server_<OS>.sh
 
 ### For Windows
-Windows is not currently supported for the preflight scripts. For windows-based databases you can run the preflight scripts remotely from a linux system that has access to the database server and use the host ip (-i) and port number (-o) options.
+Windows is not currently supported for the preflight scripts. For windows-based databases you can run the preflight scripts remotely from a linux system that has access to the database server and use the host (-i) and port number (-o) options.
