@@ -165,4 +165,4 @@ The second script upgrades all the instances where the collation is different fr
         sudo bash <path to the files>/airgap-databse-server_<OS>.sh
 
 ### For Windows
-Windows is not currently supported for the preflight scripts. For windows-based databases you can run the preflight scripts remotely from a linux machine and use the host ip (-i) and port number (-o) options.
+Windows is not currently supported for the preflight scripts. For windows-based databases you can run the preflight scripts remotely from a linux system that has access to the database server and use the host ip (-i) and port number (-o) options.
