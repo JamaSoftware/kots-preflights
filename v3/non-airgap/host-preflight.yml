@@ -160,7 +160,7 @@ spec:
         collectorName: var-space
         outcomes:
           - fail:
-              when: "total < 75Gi"
+              when: "available < 75Gi"
               message: The /var directory has less than 80GB of space.
           - pass:
               message: The /var directory has enough space.
